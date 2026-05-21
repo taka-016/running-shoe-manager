@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug RunningShoeManagerApplication",
+      "request": "launch",
+      "mainClass": "com.example.running_shoe_manager.RunningShoeManagerApplication",
+      "projectName": "running-shoe-manager",
+      "env": {
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://db:5432/shoes_management",
+        "SPRING_DATASOURCE_USERNAME": "user",
+        "SPRING_DATASOURCE_PASSWORD": "password"
+      }
+    }
+  ]
+}

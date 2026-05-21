@@ -1,4 +1,26 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: running-shoe-manager-app
+    working_dir: /workspace/running-shoe-manager
+    command: sleep infinity
+    volumes:
+      - .:/workspace/running-shoe-manager:cached
+      - running-shoe-manager-m2-cache:/root/.m2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/shoes_management
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - running-shoe-manager-net
+
   db:
     image: postgres:15
     container_name: shoes-db
@@ -9,4 +31,45 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - running-shoe-manager-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d shoes_management"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - running-shoe-manager-net
+
+  db-manager:
+    image: dpage/pgadmin4:8.4
+    container_name: running-shoe-manager-db-manager
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 8081
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    volumes:
+      - running-shoe-manager-pgadmin-data:/var/lib/pgadmin
+      - ./docker/db/servers.json:/pgadmin4/servers.json
+      - ./docker/db/pgpass:/pgadmin4/pgpass
+    entrypoint: >
+      /bin/sh -c "
+      mkdir -m 700 -p /var/lib/pgadmin/storage/admin_pgadmin.org;
+      cp /pgadmin4/pgpass /var/lib/pgadmin/storage/admin_pgadmin.org/;
+      chmod 600 /var/lib/pgadmin/storage/admin_pgadmin.org/pgpass;
+      /entrypoint.sh
+      "
+    networks:
+      - running-shoe-manager-net
+
+volumes:
+  running-shoe-manager-postgres-data:
+  running-shoe-manager-m2-cache:
+  running-shoe-manager-pgadmin-data:
+
+networks:
+  running-shoe-manager-net:
+    driver: bridge
