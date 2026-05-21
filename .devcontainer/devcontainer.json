@@ -4,7 +4,11 @@
   "service": "app",
   "workspaceFolder": "/workspace/running-shoe-manager",
   "shutdownAction": "stopCompose",
-  "forwardPorts": [8080, 5432],
+  "forwardPorts": [
+    8080,
+    5432,
+    8081
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
